@@ -383,7 +383,7 @@ def createPlanGraph():
     plt.show()
 
 def main():
-    createTimeGraphs()
+    generatePERFECTcsv()
    
     return
 
