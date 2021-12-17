@@ -15,9 +15,29 @@ from BEST import BEST
 from ASTAR import ASTAR
 from PERFECT import PERFECT
 
-def getFiles():
+def getFiles(n):
     files = os.listdir('.\\States')
-    return files
+    newFiles = sortFilesList(files)
+    return newFiles[:n]
+
+def sortFilesList(files):
+    newFiles = []
+    numbers = []
+    for file in files:
+        number = int(file.replace('.txt', ''), 10)
+        numbers.append(number)
+    
+    numbers.sort()
+    for number in numbers:
+        newFiles.append(str(number) + '.txt')
+    
+    return newFiles
+
+def getNrBlocksForAlg(algorithm):
+    if algorithm == 'BFS' or algorithm == 'DFS' or algorithm == 'PERFECT' or algorithm == 'ASTAR':
+        return 10
+    else:
+        return 14750
 
 def readStates(nstates, file):
     path = "States\\" + file
@@ -154,12 +174,9 @@ def getNumberBlocks(files):
 def getAverage(alg, nblocks, dataframe, column):
     list = []
     for blocks in nblocks:
-        if alg == "BFS" and blocks < 8:
+        if blocks < getNrBlocksForAlg(alg):
             list.append(dataframe.loc[dataframe[column] == blocks].mean())
-        if alg == "DFS" and blocks < 8:
-            list.append(dataframe.loc[dataframe[column] == blocks].mean())
-        elif alg != 'BFS' and alg != 'DFS':
-            list.append(dataframe.loc[dataframe[column] == blocks].mean())
+       
     return list
 
 def createUSTimegraph(filename, nblocks):
@@ -220,7 +237,7 @@ def createBESTTimegraph(filename, nblocks):
     sorted = averaged.sort_values(by='Number of blocks', ascending=True)
     x = sorted['Number of blocks']
     y = sorted['Time']
-    plt.plot(x, y, 'c', label="BEST")
+    plt.plot(x, y, 'y', label="BEST")
     plt.legend()
 
 def createASTARTimegraph(filename, nblocks):
@@ -230,11 +247,21 @@ def createASTARTimegraph(filename, nblocks):
     sorted = averaged.sort_values(by='Number of blocks', ascending=True)
     x = sorted['Number of blocks']
     y = sorted['Time']
-    plt.plot(x, y, 'c', label="ASTAR")
+    plt.plot(x, y, 'g', label="ASTAR")
+    plt.legend()
+
+def createPERFECTimegraph(filename, nblocks):
+    data = pd.read_csv(filename)
+    avg = getAverage('PERFECT', nblocks, data, 'Number of blocks')
+    averaged = pd.DataFrame(avg)
+    sorted = averaged.sort_values(by='Number of blocks', ascending=True)
+    x = sorted['Number of blocks']
+    y = sorted['Time']
+    plt.plot(x, y, 'r', label="PERFECT")
     plt.legend()
 
 def generateUScsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('US'))
     nblocks = getNumberBlocks(files)
     with open('us.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -244,7 +271,7 @@ def generateUScsv():
             runtimeTestUS(writer, file)
 
 def generateGN1csv():
-    files = getFiles()
+    files = getFiles(getFiles(getNrBlocksForAlg('GN1')))
     nblocks = getNumberBlocks(files)
     with open('gn1.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -254,7 +281,7 @@ def generateGN1csv():
             runtimeTestGN1(writer, file)
 
 def generateGN2csv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('GN2'))
     nblocks = getNumberBlocks(files)
     with open('gn2.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -264,7 +291,7 @@ def generateGN2csv():
             runtimeTestGN2(writer, file)
 
 def generateBFScsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('BFS'))
     nblocks = getNumberBlocks(files)
     with open('bfs.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -274,7 +301,7 @@ def generateBFScsv():
             runtimeTestBFS(writer, file)
 
 def generateDFScsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('DFS'))
     nblocks = getNumberBlocks(files)
     with open('dfs.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -284,7 +311,7 @@ def generateDFScsv():
             runtimeTestDFS(writer, file)
 
 def generateBESTcsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('BEST'))
     nblocks = getNumberBlocks(files)
     with open('best.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -294,7 +321,7 @@ def generateBESTcsv():
             runtimeTestBEST(writer, file)
 
 def generateASTARcsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('ASTAR'))
     nblocks = getNumberBlocks(files)
     with open('astar.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -304,7 +331,7 @@ def generateASTARcsv():
             runtimeTestASTAR(writer, file)
 
 def generatePERFECTcsv():
-    files = getFiles()
+    files = getFiles(getNrBlocksForAlg('PERFECT'))
     nblocks = getNumberBlocks(files)
     with open('perfect.csv', "w") as csvfile:
         fieldnames = ['Number of blocks', 'Time', 'Algorithm', 'Plan length']
@@ -314,11 +341,10 @@ def generatePERFECTcsv():
             runtimeTestPERFECT(writer, file)
 
 def createTimeGraphs():
-    createUSTimegraph('us.csv', getNumberBlocks(getFiles()))
-    createGN1Timegraph('gn1.csv', getNumberBlocks(getFiles()))
-    createGN2Timegraph('gn2.csv', getNumberBlocks(getFiles()))
-    createBFSTimegraph('bfs.csv', getNumberBlocks(getFiles()))
-    createDFSTimegraph('dfs.csv', getNumberBlocks(getFiles()))
+    createUSTimegraph('us.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('US'))))
+    createGN1Timegraph('gn1.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('GN1'))))
+    createGN2Timegraph('gn2.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('GN2'))))
+    createDFSTimegraph('dfs.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('DFS'))))
     plt.show()
 
 
@@ -371,19 +397,49 @@ def createDFSplangraph(nblocks):
     sorted = averaged.sort_values(by='Number of blocks', ascending=True)
     x = sorted['Number of blocks']
     y = sorted['Plan length']
-    plt.plot(x, y, 'r', label="DFS")
+    plt.plot(x, y, 'g', label="DFS")
+    plt.legend()
+
+def createPERFECTplangraph(nblocks):
+    data = pd.read_csv('perfect.csv')
+    avg = getAverage('PERFECT', nblocks, data, 'Number of blocks')
+    averaged = pd.DataFrame(avg)
+    sorted = averaged.sort_values(by='Number of blocks', ascending=True)
+    x = sorted['Number of blocks']
+    y = sorted['Plan length']
+    plt.plot(x, y, 'y', label="PERFECT")
+    plt.legend()
+
+def createASTARplangraph(nblocks):
+    data = pd.read_csv('astar.csv')
+    avg = getAverage('ASTAR', nblocks, data, 'Number of blocks')
+    averaged = pd.DataFrame(avg)
+    sorted = averaged.sort_values(by='Number of blocks', ascending=True)
+    x = sorted['Number of blocks']
+    y = sorted['Plan length']
+    plt.plot(x, y, 'b', label="ASTAR")
     plt.legend()
 
 def createPlanGraph():
-    createUSplangraph(getNumberBlocks(getFiles()))
-    createGN1plangraph(getNumberBlocks(getFiles()))
-    createGN2plangraph(getNumberBlocks(getFiles()))
-    createBFSplangraph(getNumberBlocks(getFiles()))
-    createDFSplangraph(getNumberBlocks(getFiles()))
+    createUSplangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('US'))))
+    createGN1plangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('GN1'))))
+    createGN2plangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('GN2'))))
+    plt.show()
+
+def createSmallPlanGraph():
+    createDFSplangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('DFS'))))
+    createBFSplangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('BFS'))))
+    createASTARplangraph(getNumberBlocks(getFiles(getNrBlocksForAlg('ASTAR'))))
+    plt.show()
+
+def createSmallTimeGraph():
+    createDFSTimegraph('dfs.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('DFS'))))
+    createBFSTimegraph('bfs.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('BFS'))))
+    createASTARTimegraph('astar.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('ASTAR'))))
+    createPERFECTimegraph('perfect.csv', getNumberBlocks(getFiles(getNrBlocksForAlg('PERFECT'))))
     plt.show()
 
 def main():
-    createTimeGraphs()
     createPlanGraph()
     return
 
